@@ -1,7 +1,7 @@
 # neuroshed 🧰
 
 Reusable PyTorch building blocks and models (attention, transformer blocks, embeddings,
-norms, ViT, etc..). These are *not* meant to be SOTA. They're lean implementations to unify and accelerate my own research projects. Certain design decisions, such as RMSNorm and GELU, are hardcoded.
+norms, ViT, etc..). These are *not* meant to be SOTA. They're lean implementations to unify and accelerate my own research projects. Certain design decisions (eg., RMSNorm, GELU, QK norm) are hardcoded to limit drift.
 
 ## Install
 
