@@ -1,0 +1,29 @@
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[project]
+name = "ml-modules"
+version = "0.1.0"
+description = "Reusable PyTorch building blocks."
+readme = "README.md"
+requires-python = ">=3.10"
+authors = [{ name = "Samuel Barbeau", email = "samuelpbarbeau@gmail.com" }]
+dependencies = [
+    "torch>=2.4",  # nn.RMSNorm
+]
+
+[project.optional-dependencies]
+dev = ["pytest>=8.0", "ruff"]
+
+[project.urls]
+Repository = "https://github.com/samb271/ml_modules"
+
+[tool.hatch.build.targets.wheel]
+packages = ["src/ml_modules"]
+
+[tool.ruff]
+line-length = 100
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
