@@ -11,7 +11,7 @@ import torch
 import torch.nn as nn
 import torch.nn.functional as F
 
-from neuroshed.blocks import TransformerBlock
+from nnbox.blocks import TransformerBlock
 
 __all__ = ["ViT", "ViTConfig", "VIT_CONFIGS", "vit_config"]
 
@@ -83,7 +83,7 @@ class ViT(nn.Module):
     Encoder only: patchify, optionally prepend a CLS token, add a position
     embedding, run the transformer stack, final norm. Returns the full token
     sequence with no pooling or head — compose those yourself for whatever
-    task you're using it for, e.g. an `MLP` from `neuroshed.blocks` on
+    task you're using it for, e.g. an `MLP` from `nnbox.blocks` on
     `out[:, 0]` for classification, or `out[:, 1:]` for dense/patch-level
     tasks.
 

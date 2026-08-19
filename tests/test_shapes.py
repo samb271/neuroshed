@@ -7,7 +7,7 @@ the kind of bug that only shows up several hours into a training run.
 import pytest
 import torch
 
-from neuroshed import (
+from nnbox import (
     MLP,
     CrossAttention,
     CrossAttentionBlock,
