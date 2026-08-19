@@ -23,3 +23,13 @@ from neuroshed import SelfAttention, TransformerBlock
 
 `from neuroshed.attention import SelfAttention` also works if you prefer the
 explicit path.
+
+---
+
+## TODO
+
+- [ ] SIGReg
+- [ ] EMA
+- [ ] VICReg
+- [ ] CNN encoder
+- [ ] Embedding layer
