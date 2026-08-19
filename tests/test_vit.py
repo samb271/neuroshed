@@ -3,8 +3,8 @@
 import pytest
 import torch
 
-from ml_modules import MLP
-from ml_modules.models.vit import VIT_CONFIGS, ViT, vit_config
+from neuroshed import MLP
+from neuroshed.models.vit import VIT_CONFIGS, ViT, vit_config
 
 B, IMG_SIZE = 2, 32
 

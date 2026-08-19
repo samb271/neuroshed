@@ -9,7 +9,7 @@ incorrectly.
 import pytest
 import torch
 
-from ml_modules import RotaryEmbedding, SelfAttention, TransformerBlock, apply_rotary_emb
+from neuroshed import RotaryEmbedding, SelfAttention, TransformerBlock, apply_rotary_emb
 
 B, T, DIM, HEADS = 2, 6, 32, 4
 HEAD_DIM = DIM // HEADS

@@ -9,7 +9,7 @@ import torch
 import torch.nn as nn
 import torch.nn.functional as F
 
-from ml_modules.embeddings import apply_rotary_emb
+from neuroshed.embeddings import apply_rotary_emb
 
 __all__ = ["MultiheadAttention", "SelfAttention", "CrossAttention"]
 

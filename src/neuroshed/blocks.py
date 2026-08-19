@@ -6,7 +6,7 @@ and writes back through a residual add.
 
 import torch.nn as nn
 
-from ml_modules.attention import CrossAttention, SelfAttention
+from neuroshed.attention import CrossAttention, SelfAttention
 
 __all__ = ["MLP", "TransformerBlock", "CrossAttentionBlock"]
 
