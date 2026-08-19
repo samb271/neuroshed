@@ -1,7 +1,7 @@
 # neuroshed
 
-Reusable PyTorch building blocks (attention, transformer blocks, embeddings,
-norms) shared across projects.
+Reusable PyTorch building blocks and models (attention, transformer blocks, embeddings,
+norms, ViT, etc..). These are *not* meant to be SOTA. They're lean implementations to unify and accelerate my own research projects. Certain design decisions, such as RMSNorm and GELU, are hardcoded.
 
 ## Install
 
