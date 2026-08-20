@@ -25,7 +25,7 @@ class ViTConfig:
     num_heads: int
     mlp_ratio: float = 4.0
     patch_size: int = 16
-    dropout: float = 0.0
+    dropout: float = 0.1
 
 
 # Base/Large/Huge are Table 1 of Dosovitskiy et al., 2020. Tiny/Small are from

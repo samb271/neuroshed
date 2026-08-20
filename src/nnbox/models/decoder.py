@@ -54,7 +54,7 @@ class PatchDecoder(nn.Module):
         depth=4,
         num_heads=8,
         mlp_ratio=4.0,
-        dropout=0.0,
+        dropout=0.1,
         refine_channels=128,
         refine_blocks=4,
     ):

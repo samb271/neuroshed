@@ -28,7 +28,7 @@ class MultiheadAttention(nn.Module):
             Its `head_dim` must equal `dim // num_heads`.
     """
 
-    def __init__(self, dim, num_heads, dropout=0.0, rope=None):
+    def __init__(self, dim, num_heads, dropout=0.1, rope=None):
         super().__init__()
         assert dim % num_heads == 0, f"dim ({dim}) must be divisible by num_heads ({num_heads})"
         self.dim = dim
