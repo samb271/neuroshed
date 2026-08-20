@@ -75,6 +75,10 @@ def test_mlp_shapes(kwargs, expected):
     assert MLP(DIM, **kwargs).eval()(torch.randn(B, TQ, DIM)).shape == (B, TQ, expected)
 
 
+def test_mlp_default_hidden_is_ratio_times_in_dim():
+    assert MLP(DIM).net[0].out_features == int(DIM * 4.0)
+
+
 def test_mlp_hidden_dim_overrides_ratio():
     mlp = MLP(DIM, hidden_dim=3, mlp_ratio=4.0)
     assert mlp.net[0].out_features == 3

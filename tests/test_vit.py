@@ -34,6 +34,46 @@ def test_image_size_must_be_divisible_by_patch_size():
         ViT(tiny_config(patch_size=16), img_size=IMG_SIZE + 1)
 
 
+def test_vit_config_overrides_apply_and_leave_other_fields_alone():
+    config = vit_config("tiny", patch_size=32, dropout=0.0)
+
+    assert (config.patch_size, config.dropout) == (32, 0.0)
+    assert config.dim == VIT_CONFIGS["tiny"].dim
+    assert config.depth == VIT_CONFIGS["tiny"].depth
+
+
+def test_vit_config_does_not_mutate_the_preset():
+    """Presets are shared module state; `replace` on a frozen dataclass must
+    hand back a copy."""
+    vit_config("tiny", patch_size=32)
+    assert VIT_CONFIGS["tiny"].patch_size == 16
+
+
+def test_forward_image_must_be_divisible_by_patch_size():
+    model = ViT(tiny_config(patch_size=16), img_size=IMG_SIZE).eval()
+    with pytest.raises(AssertionError):
+        model(torch.randn(B, 3, IMG_SIZE + 1, IMG_SIZE))
+
+
+def test_forward_on_a_non_square_image():
+    """PatchEmbed reports a (grid_h, grid_w) pair, so the position embedding
+    interpolates to non-square grids too."""
+    model = ViT(tiny_config(patch_size=16), img_size=IMG_SIZE).eval()
+    grid_h, grid_w = IMG_SIZE // 16, IMG_SIZE * 2 // 16
+
+    out = model(torch.randn(B, 3, IMG_SIZE, IMG_SIZE * 2))
+
+    assert out.shape == (B, 1 + grid_h * grid_w, model.config.dim)
+
+
+def test_in_chans_is_respected():
+    model = ViT(tiny_config(patch_size=16), img_size=IMG_SIZE, in_chans=1).eval()
+
+    out = model(torch.randn(B, 1, IMG_SIZE, IMG_SIZE))
+
+    assert out.shape == (B, 1 + (IMG_SIZE // 16) ** 2, model.config.dim)
+
+
 def test_cls_and_patch_tokens_are_distinguishable():
     """Index 0 (CLS) and the patch tokens must carry different information,
     i.e. the model isn't collapsing them to the same representation."""
