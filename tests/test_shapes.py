@@ -93,6 +93,36 @@ def test_cross_attention_block_shape():
     assert out.shape == (B, TQ, DIM)
 
 
+def test_cross_attention_block_masks_the_query_side():
+    """`key_padding_mask` marks padding in `x` itself: a masked position must
+    not leak into the other positions' outputs through the self-attention."""
+    block = CrossAttentionBlock(DIM, HEADS).eval()
+    x = torch.randn(B, TQ, DIM)
+    context = torch.randn(B, TK, DIM)
+    mask = torch.zeros(B, TQ, dtype=torch.bool)
+    mask[:, -1] = True
+
+    out = block(x, context, key_padding_mask=mask)
+    x[:, -1] = torch.randn(B, DIM)
+    out_perturbed = block(x, context, key_padding_mask=mask)
+
+    torch.testing.assert_close(out[:, :-1], out_perturbed[:, :-1])
+
+
+def test_cross_attention_block_masks_the_context_side():
+    block = CrossAttentionBlock(DIM, HEADS).eval()
+    x = torch.randn(B, TQ, DIM)
+    context = torch.randn(B, TK, DIM)
+    mask = torch.zeros(B, TK, dtype=torch.bool)
+    mask[:, -2:] = True
+
+    out = block(x, context, context_padding_mask=mask)
+    context[:, -2:] = torch.randn(B, 2, DIM)
+    out_perturbed = block(x, context, context_padding_mask=mask)
+
+    torch.testing.assert_close(out, out_perturbed)
+
+
 def test_cross_attention_block_backward():
     """Gradients must reach both the query and the context path."""
     block = CrossAttentionBlock(DIM, HEADS)
