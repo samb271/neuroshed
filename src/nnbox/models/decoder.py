@@ -9,6 +9,7 @@ not just nnbox's own `ViT`.
 
 import math
 
+import torch
 import torch.nn as nn
 
 from nnbox.convolution import ConvStack
@@ -34,9 +35,9 @@ class PatchDecoder(nn.Module):
 
     Args:
         img_size: default output image side length; must be divisible by
-            `patch_size`. This only sizes the default token grid — a grid of
-            any other size is accepted at forward time and decodes to its own
-            resolution.
+            `patch_size`. This only sizes the cached position embedding — a
+            token grid of any other size is accepted at forward time and
+            decodes to its own resolution.
         patch_size: pixel width/height reconstructed per token.
         out_channels: output image channels.
         embed_dim: dimension of the input token sequence.
@@ -80,6 +81,7 @@ class PatchDecoder(nn.Module):
         )
         self.img_size = img_size
         self.patch_size = patch_size
+        self.model_dim = model_dim
         self.default_grid = img_size // patch_size
         self.out_channels = out_channels
 
@@ -94,6 +96,29 @@ class PatchDecoder(nn.Module):
         self.patch_head = nn.Linear(model_dim, out_channels * patch_size * patch_size)
 
         self.refine = ConvStack(out_channels, refine_channels, refine_blocks)
+
+        # The table for the default grid never changes, so build it once here
+        # rather than per step. Non-persistent: it is a pure function of the
+        # config, not learned state, so it stays out of the state dict.
+        self.register_buffer(
+            "pos_embed",
+            build_2d_sincos_pos_embed(
+                self.default_grid, self.default_grid, model_dim,
+                device=None, dtype=torch.float32,
+            ),
+            persistent=False,
+        )
+
+    def _position_embed(self, grid, device, dtype):
+        """Sin-cos table for a `grid x grid` token grid.
+
+        The default grid is served from the cached buffer; any other grid is
+        rebuilt on the spot, since the resolution is only known once the
+        tokens arrive.
+        """
+        if grid == self.default_grid:
+            return self.pos_embed.to(dtype)
+        return build_2d_sincos_pos_embed(grid, grid, self.model_dim, device=device, dtype=dtype)
 
     def forward(self, x):
         """
@@ -112,9 +137,7 @@ class PatchDecoder(nn.Module):
         assert grid * grid == N, f"PatchDecoder expected a square token grid, got N={N} tokens"
 
         x = self.input_proj(x)
-        x = x + build_2d_sincos_pos_embed(
-            grid, grid, x.shape[-1], device=x.device, dtype=x.dtype
-        )
+        x = x + self._position_embed(grid, x.device, x.dtype)
 
         for block in self.blocks:
             x = block(x)

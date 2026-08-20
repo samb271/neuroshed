@@ -89,6 +89,50 @@ def test_off_grid_decode_uses_every_parameter():
     assert ungrad == []
 
 
+def test_default_grid_position_embed_is_cached():
+    """The hot path must reuse the buffer instead of rebuilding the table."""
+    model = tiny_decoder().eval()
+    assert model._position_embed(GRID, torch.device("cpu"), torch.float32) is model.pos_embed
+
+
+def test_off_grid_position_embed_is_built_on_demand():
+    model = tiny_decoder().eval()
+    pos = model._position_embed(GRID + 1, torch.device("cpu"), torch.float32)
+    assert pos.shape == (1, (GRID + 1) ** 2, model.model_dim)
+
+
+def test_position_embed_follows_requested_dtype():
+    model = tiny_decoder().eval()
+    device = torch.device("cpu")
+    assert model._position_embed(GRID, device, torch.bfloat16).dtype == torch.bfloat16
+    assert model._position_embed(GRID + 1, device, torch.bfloat16).dtype == torch.bfloat16
+
+
+def test_position_embed_is_not_learned_state():
+    """A fixed table is a pure function of the config, so it belongs in
+    neither the state dict nor the parameters."""
+    model = tiny_decoder()
+    assert "pos_embed" not in model.state_dict()
+    assert all(p is not model.pos_embed for p in model.parameters())
+
+
+def test_projects_from_a_different_embed_dim():
+    """embed_dim and model_dim are decoupled by the input projection."""
+    model = tiny_decoder(embed_dim=EMBED_DIM * 2).eval()
+
+    out = model(torch.randn(B, NUM_TOKENS, EMBED_DIM * 2))
+
+    assert out.shape == (B, 3, IMG_SIZE, IMG_SIZE)
+
+
+def test_out_channels_is_respected():
+    model = tiny_decoder(out_channels=1).eval()
+
+    out = model(torch.randn(B, NUM_TOKENS, EMBED_DIM))
+
+    assert out.shape == (B, 1, IMG_SIZE, IMG_SIZE)
+
+
 def test_refine_blocks_zero_still_runs():
     model = tiny_decoder(refine_blocks=0).eval()
     out = model(torch.randn(B, NUM_TOKENS, EMBED_DIM))
