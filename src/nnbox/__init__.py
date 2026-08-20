@@ -7,7 +7,7 @@ move between modules without notice.
 
 from nnbox.attention import CrossAttention, MultiheadAttention, SelfAttention
 from nnbox.convolution import ConvStack, ResidualConvBlock
-from nnbox.embeddings import RotaryEmbedding, apply_rotary_emb
+from nnbox.embeddings import RotaryEmbedding, apply_rotary_emb, build_2d_sincos_pos_embed
 from nnbox.mlp import MLP
 from nnbox.transformer import CrossAttentionBlock, TransformerBlock
 
@@ -24,4 +24,5 @@ __all__ = [
     "ConvStack",
     "RotaryEmbedding",
     "apply_rotary_emb",
+    "build_2d_sincos_pos_embed",
 ]

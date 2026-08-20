@@ -3,7 +3,7 @@
 import torch
 import torch.nn as nn
 
-__all__ = ["RotaryEmbedding", "apply_rotary_emb"]
+__all__ = ["RotaryEmbedding", "apply_rotary_emb", "build_2d_sincos_pos_embed"]
 
 
 def rotate_half(x):
@@ -89,3 +89,40 @@ class RotaryEmbedding(nn.Module):
         emb = emb.unsqueeze(1)
 
         return emb.cos().to(dtype), emb.sin().to(dtype)
+
+
+def build_2d_sincos_pos_embed(grid_h, grid_w, dim, *, device, dtype):
+    """Fixed (non-learned) 2D sin-cos position embedding for a patch grid.
+
+    Unlike a learned position embedding, this needs no interpolation to
+    support a grid size other than the one training started with: it's
+    recomputed directly at whatever `grid_h, grid_w` the caller passes.
+
+    Args:
+        grid_h: grid height, in patches.
+        grid_w: grid width, in patches.
+        dim: embedding dimension; must be divisible by 4 (split evenly
+            between sin/cos and the height/width axes).
+        device: device for the returned tensor.
+        dtype: dtype for the returned tensor.
+
+    Returns:
+        (1, grid_h * grid_w, dim), row-major over the grid.
+    """
+    assert dim % 4 == 0, f"dim ({dim}) must be divisible by 4"
+
+    y, x = torch.meshgrid(
+        torch.arange(grid_h, device=device, dtype=torch.float32),
+        torch.arange(grid_w, device=device, dtype=torch.float32),
+        indexing="ij",
+    )
+    y, x = y.reshape(-1, 1), x.reshape(-1, 1)
+
+    omega = torch.arange(dim // 4, device=device, dtype=torch.float32)
+    omega = 1.0 / (10000.0 ** (omega / (dim // 4)))
+
+    out_x, out_y = x * omega[None, :], y * omega[None, :]
+    emb = torch.cat(
+        [torch.sin(out_x), torch.cos(out_x), torch.sin(out_y), torch.cos(out_y)], dim=-1
+    )
+    return emb.unsqueeze(0).to(dtype=dtype)
