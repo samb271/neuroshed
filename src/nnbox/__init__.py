@@ -6,8 +6,9 @@ move between modules without notice.
 """
 
 from nnbox.attention import CrossAttention, MultiheadAttention, SelfAttention
-from nnbox.blocks import MLP, CrossAttentionBlock, TransformerBlock
 from nnbox.embeddings import RotaryEmbedding, apply_rotary_emb
+from nnbox.mlp import MLP
+from nnbox.transformer import CrossAttentionBlock, TransformerBlock
 
 __version__ = "0.1.0"
 
