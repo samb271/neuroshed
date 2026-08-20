@@ -11,7 +11,7 @@ from nnbox.embeddings import RotaryEmbedding, apply_rotary_emb, build_2d_sincos_
 from nnbox.mlp import MLP
 from nnbox.transformer import CrossAttentionBlock, TransformerBlock
 
-__version__ = "0.1.0"
+__version__ = "0.2.0"
 
 __all__ = [
     "MultiheadAttention",
