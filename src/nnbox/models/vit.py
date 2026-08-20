@@ -8,8 +8,8 @@ and is reused as-is; only the patch/position embedding here is.
 from dataclasses import dataclass, replace
 
 import torch
-import torch.nn as nn
 import torch.nn.functional as F
+from torch import nn
 
 from nnbox.transformer import TransformerBlock
 

@@ -5,7 +5,7 @@ than RMSNorm, since these operate on spatial feature maps rather than a token
 sequence.
 """
 
-import torch.nn as nn
+from torch import nn
 
 __all__ = ["ResidualConvBlock", "ConvStack"]
 

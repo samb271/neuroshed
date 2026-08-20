@@ -10,7 +10,7 @@ not just nnbox's own `ViT`.
 import math
 
 import torch
-import torch.nn as nn
+from torch import nn
 
 from nnbox.convolution import ConvStack
 from nnbox.embeddings import build_2d_sincos_pos_embed

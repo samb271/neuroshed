@@ -5,8 +5,8 @@ All masks in this package are *padding* masks with the convention
 ``key_padding_mask``.
 """
 
-import torch.nn as nn
 import torch.nn.functional as F
+from torch import nn
 
 from nnbox.embeddings import apply_rotary_emb
 from nnbox.utils import padding_mask_to_bias

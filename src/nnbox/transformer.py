@@ -4,7 +4,7 @@ Both blocks are pre-norm and residual: every sublayer sees a normalized input
 and writes back through a residual add.
 """
 
-import torch.nn as nn
+from torch import nn
 
 from nnbox.attention import CrossAttention, SelfAttention
 from nnbox.mlp import MLP

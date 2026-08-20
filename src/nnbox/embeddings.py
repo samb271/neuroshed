@@ -1,7 +1,7 @@
 """Positional embeddings."""
 
 import torch
-import torch.nn as nn
+from torch import nn
 
 __all__ = ["RotaryEmbedding", "apply_rotary_emb", "build_2d_sincos_pos_embed"]
 
