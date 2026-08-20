@@ -9,7 +9,7 @@ from torch import nn
 from nnbox.attention import CrossAttention, SelfAttention
 from nnbox.mlp import MLP
 
-__all__ = ["TransformerBlock", "CrossAttentionBlock"]
+__all__ = ["CrossAttentionBlock", "TransformerBlock"]
 
 
 class TransformerBlock(nn.Module):

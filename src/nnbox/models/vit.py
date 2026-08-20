@@ -13,7 +13,7 @@ from torch import nn
 
 from nnbox.transformer import TransformerBlock
 
-__all__ = ["ViT", "ViTConfig", "VIT_CONFIGS", "vit_config"]
+__all__ = ["VIT_CONFIGS", "ViT", "ViTConfig", "vit_config"]
 
 
 @dataclass(frozen=True)
