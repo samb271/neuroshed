@@ -24,7 +24,7 @@ def _dropout_defaults():
     """Every public constructor taking a `dropout`, with its default."""
     public = [getattr(nnbox, name) for name in nnbox.__all__]
     found = []
-    for obj in public + [ViTConfig, PatchDecoder]:
+    for obj in [*public, ViTConfig, PatchDecoder]:
         if not inspect.isclass(obj):
             continue
         param = inspect.signature(obj).parameters.get("dropout")

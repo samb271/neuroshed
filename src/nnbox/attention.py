@@ -142,7 +142,9 @@ class CrossAttention(MultiheadAttention):
     unrelated position spaces makes the relative offset between them meaningless.
     """
 
-    def forward(self, x, context, context_padding_mask=None, positions=None, context_positions=None):
+    def forward(
+        self, x, context, context_padding_mask=None, positions=None, context_positions=None
+    ):
         """
         Args:
             x: (B, Tq, dim)
