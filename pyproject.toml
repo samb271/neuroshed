@@ -25,32 +25,18 @@ packages = ["src/nnbox"]
 [tool.ruff]
 line-length = 100
 
-# Pinned explicitly: ruff's default rule set widens between releases, so
-# relying on it means the lint result drifts with whatever version happens to
-# be installed. Paired with the bound on ruff in the dev extra.
+# Selected explicitly so the lint result does not drift with ruff's defaults,
+# which is how E501 went unchecked despite line-length being set here. Kept to
+# the families that stay silent until something is actually wrong — style-
+# opinion rules (PL, RUF, N) fire on deliberate choices and cost more
+# iteration time than they return on a library this size.
 [tool.ruff.lint]
 select = [
-    "E", "W",  # pycodestyle
-    "F",       # pyflakes
-    "I",       # import sorting
-    "B",       # bugbear
-    "UP",      # pyupgrade
-    "SIM",     # flake8-simplify
-    "C4",      # comprehensions
-    "PL",      # pylint
-    "RUF",     # ruff-specific
+    "E",  # pycodestyle, incl. the E501 that line-length implies
+    "F",  # pyflakes: undefined names, unused imports
+    "B",  # bugbear: mutable defaults and similar footguns
+    "I",  # import sorting
 ]
-ignore = [
-    # Layer constructors are config-heavy by nature; PatchDecoder alone takes
-    # 11 size knobs, and splitting them up would not make it clearer.
-    "PLR0913",  # too many arguments
-    "PLR0917",  # too many positional arguments
-    "PLR2004",  # magic value in comparison — shape and size literals read fine
-]
-
-# pep8-naming (N) is deliberately absent: it fights the tensor-shape
-# convention this package is written in (B, Tq, Tk, H, Dh) and the universal
-# `import torch.nn.functional as F`.
 
 [tool.pytest.ini_options]
 testpaths = ["tests"]

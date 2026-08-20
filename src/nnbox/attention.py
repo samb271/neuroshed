@@ -11,7 +11,7 @@ from torch import nn
 from nnbox.embeddings import apply_rotary_emb
 from nnbox.utils import padding_mask_to_bias
 
-__all__ = ["CrossAttention", "MultiheadAttention", "SelfAttention"]
+__all__ = ["MultiheadAttention", "SelfAttention", "CrossAttention"]
 
 
 class MultiheadAttention(nn.Module):

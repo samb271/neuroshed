@@ -7,7 +7,7 @@ sequence.
 
 from torch import nn
 
-__all__ = ["ConvStack", "ResidualConvBlock"]
+__all__ = ["ResidualConvBlock", "ConvStack"]
 
 
 def group_norm(channels, max_groups=32):
