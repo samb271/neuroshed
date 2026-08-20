@@ -5,11 +5,11 @@ All masks in this package are *padding* masks with the convention
 ``key_padding_mask``.
 """
 
-import torch
 import torch.nn as nn
 import torch.nn.functional as F
 
 from nnbox.embeddings import apply_rotary_emb
+from nnbox.utils import padding_mask_to_bias
 
 __all__ = ["MultiheadAttention", "SelfAttention", "CrossAttention"]
 
@@ -93,8 +93,7 @@ class MultiheadAttention(nn.Module):
 
         attn_bias = None
         if key_padding_mask is not None:
-            attn_bias = torch.zeros(B, 1, 1, Tk, device=query.device, dtype=query.dtype)
-            attn_bias = attn_bias.masked_fill(key_padding_mask[:, None, None, :], float("-inf"))
+            attn_bias = padding_mask_to_bias(key_padding_mask, query.dtype)
 
         out = F.scaled_dot_product_attention(
             q, k, v,
