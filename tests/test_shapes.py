@@ -9,14 +9,17 @@ import torch
 
 from nnbox import (
     MLP,
+    ConvStack,
     CrossAttention,
     CrossAttentionBlock,
     MultiheadAttention,
+    ResidualConvBlock,
     SelfAttention,
     TransformerBlock,
 )
 
 B, TQ, TK, DIM, HEADS = 2, 5, 7, 32, 4
+CHANNELS, HW = 6, 8
 
 
 @pytest.fixture(autouse=True)
@@ -100,3 +103,40 @@ def test_cross_attention_block_backward():
 
     assert x.grad is not None and x.grad.abs().sum() > 0
     assert context.grad is not None and context.grad.abs().sum() > 0
+
+
+def test_residual_conv_block_preserves_shape():
+    block = ResidualConvBlock(CHANNELS).eval()
+    x = torch.randn(B, CHANNELS, HW, HW)
+    assert block(x).shape == x.shape
+
+
+@pytest.mark.parametrize("channels", [3, 6, 100, 128])
+def test_group_norm_sized_for_any_channel_count(channels):
+    """GroupNorm needs a group count dividing `channels`; odd widths like
+    3 or 100 must not blow up."""
+    block = ResidualConvBlock(channels).eval()
+    assert block(torch.randn(1, channels, 4, 4)).shape == (1, channels, 4, 4)
+
+
+@pytest.mark.parametrize("depth", [0, 1, 3])
+def test_conv_stack_preserves_channels(depth):
+    stack = ConvStack(CHANNELS, 16, depth).eval()
+    x = torch.randn(B, CHANNELS, HW, HW)
+    assert stack(x).shape == x.shape
+
+
+def test_conv_stack_rejects_bad_sizes():
+    with pytest.raises(AssertionError):
+        ConvStack(CHANNELS, 0, 2)
+    with pytest.raises(AssertionError):
+        ConvStack(CHANNELS, 16, -1)
+
+
+def test_conv_stack_backward():
+    stack = ConvStack(CHANNELS, 16, 2)
+    x = torch.randn(B, CHANNELS, HW, HW, requires_grad=True)
+
+    stack(x).sum().backward()
+
+    assert x.grad is not None and x.grad.abs().sum() > 0

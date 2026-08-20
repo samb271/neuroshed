@@ -6,6 +6,7 @@ move between modules without notice.
 """
 
 from nnbox.attention import CrossAttention, MultiheadAttention, SelfAttention
+from nnbox.convolution import ConvStack, ResidualConvBlock
 from nnbox.embeddings import RotaryEmbedding, apply_rotary_emb
 from nnbox.mlp import MLP
 from nnbox.transformer import CrossAttentionBlock, TransformerBlock
@@ -19,6 +20,8 @@ __all__ = [
     "MLP",
     "TransformerBlock",
     "CrossAttentionBlock",
+    "ResidualConvBlock",
+    "ConvStack",
     "RotaryEmbedding",
     "apply_rotary_emb",
 ]
