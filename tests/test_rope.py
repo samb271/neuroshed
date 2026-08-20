@@ -9,9 +9,16 @@ incorrectly.
 import pytest
 import torch
 
-from nnbox import RotaryEmbedding, SelfAttention, TransformerBlock, apply_rotary_emb
+from nnbox import (
+    CrossAttention,
+    CrossAttentionBlock,
+    RotaryEmbedding,
+    SelfAttention,
+    TransformerBlock,
+    apply_rotary_emb,
+)
 
-B, T, DIM, HEADS = 2, 6, 32, 4
+B, T, TK, DIM, HEADS = 2, 6, 4, 32, 4
 HEAD_DIM = DIM // HEADS
 
 
@@ -37,6 +44,12 @@ def test_requires_exactly_one_of_seq_len_or_positions():
         rope()
     with pytest.raises(ValueError):
         rope(seq_len=T, positions=torch.arange(T))
+
+
+def test_positions_must_be_1d_or_2d():
+    rope = RotaryEmbedding(HEAD_DIM)
+    with pytest.raises(ValueError):
+        rope(positions=torch.zeros(B, 1, T, dtype=torch.long))
 
 
 def test_odd_head_dim_rejected():
@@ -129,3 +142,64 @@ def test_rope_follows_module_dtype():
     x = torch.randn(B, HEADS, T, HEAD_DIM, dtype=torch.bfloat16)
     cos, sin = rope(seq_len=T, dtype=x.dtype)
     assert apply_rotary_emb(x, cos, sin).dtype == torch.bfloat16
+
+
+def test_cross_attention_with_rope_shape():
+    attn = CrossAttention(DIM, HEADS, rope=RotaryEmbedding(HEAD_DIM)).eval()
+    out = attn(torch.randn(B, T, DIM), torch.randn(B, TK, DIM))
+    assert out.shape == (B, T, DIM)
+
+
+def test_cross_attention_explicit_positions_match_default_arange():
+    attn = CrossAttention(DIM, HEADS, rope=RotaryEmbedding(HEAD_DIM)).eval()
+    x, context = torch.randn(B, T, DIM), torch.randn(B, TK, DIM)
+
+    torch.testing.assert_close(
+        attn(x, context),
+        attn(x, context, positions=torch.arange(T), context_positions=torch.arange(TK)),
+    )
+
+
+def test_cross_attention_context_positions_reach_the_key_rotation():
+    """`context_positions` is the only way to place the context in the query's
+    coordinate system, so it must actually change the rotation."""
+    attn = CrossAttention(DIM, HEADS, rope=RotaryEmbedding(HEAD_DIM)).eval()
+    x, context = torch.randn(B, T, DIM), torch.randn(B, TK, DIM)
+
+    default = attn(x, context)
+    shifted = attn(x, context, context_positions=torch.arange(TK) + 5)
+
+    assert not torch.allclose(default, shifted)
+
+
+def test_cross_attention_query_positions_reach_the_query_rotation():
+    attn = CrossAttention(DIM, HEADS, rope=RotaryEmbedding(HEAD_DIM)).eval()
+    x, context = torch.randn(B, T, DIM), torch.randn(B, TK, DIM)
+
+    default = attn(x, context)
+    shifted = attn(x, context, positions=torch.arange(T) + 5)
+
+    assert not torch.allclose(default, shifted)
+
+
+def test_block_rope_does_not_reach_the_cross_attention():
+    """Documented invariant: `x` and `context` are separate coordinate systems,
+    so a relative offset between them is meaningless and must stay unrotated
+    even when the block is given a rope."""
+    block = CrossAttentionBlock(DIM, HEADS, rope=RotaryEmbedding(HEAD_DIM))
+
+    assert block.self_attn.rope is not None
+    assert block.cross_attn.rope is None
+
+
+def test_cross_attention_block_with_rope_shape():
+    block = CrossAttentionBlock(DIM, HEADS, rope=RotaryEmbedding(HEAD_DIM)).eval()
+    out = block(torch.randn(B, T, DIM), torch.randn(B, TK, DIM))
+    assert out.shape == (B, T, DIM)
+
+
+def test_shared_rope_adds_nothing_to_a_cross_block_state_dict():
+    rope = RotaryEmbedding(HEAD_DIM)
+    with_rope = CrossAttentionBlock(DIM, HEADS, rope=rope).state_dict()
+    without = CrossAttentionBlock(DIM, HEADS).state_dict()
+    assert with_rope.keys() == without.keys()
