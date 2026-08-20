@@ -12,7 +12,7 @@ Install PyTorch first (with the CUDA build you want), then:
 pip install -e /path/to/nnbox
 
 # pinned, from another project
-pip install "nnbox @ git+https://github.com/samb271/nnbox.git@v0.2.0"
+pip install "nnbox @ git+https://github.com/samb271/nnbox.git@v0.2.1"
 ```
 
 ## Use
